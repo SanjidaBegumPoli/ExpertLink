@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-
+import 'student_home.dart';
 import 'signup_page.dart';
 import 'home_page.dart'; // student home
 import 'admin_dashboard.dart'; // admin page
@@ -61,7 +61,11 @@ class _LoginPageState extends State<LoginPage> {
             context, MaterialPageRoute(builder: (_) => const AdminDashboard()));
       } else if (role == 'student') {
         Navigator.pushReplacement(
-            context, MaterialPageRoute(builder: (_) => HomePage()));
+          context,
+          MaterialPageRoute(
+            builder: (_) => StudentHomePage(userName: data['name']),
+          ),
+        );
       } else if (role == 'prefect') {
         if (status == 'approved') {
           Navigator.pushReplacement(
@@ -124,7 +128,10 @@ class _LoginPageState extends State<LoginPage> {
               const Text(
                 "Login",
                 style: TextStyle(
-                    fontSize: 30, fontWeight: FontWeight.bold, fontFamily: 'Ubuntu', color: Colors.pinkAccent),
+                    fontSize: 30,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Ubuntu',
+                    color: Colors.pinkAccent),
               ),
               const SizedBox(height: 5),
               const Text(

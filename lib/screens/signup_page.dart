@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'login_page.dart';
 import 'home_page.dart';
 import 'pending_approval_page.dart';
+import 'student_home.dart';
 
 class SignupPage extends StatefulWidget {
   const SignupPage({super.key});
@@ -123,7 +124,11 @@ class _SignupPageState extends State<SignupPage> {
             context, MaterialPageRoute(builder: (_) => const PendingApprovalPage()));
       } else {
         Navigator.pushReplacement(
-            context, MaterialPageRoute(builder: (_) => HomePage()));
+          context,
+          MaterialPageRoute(
+            builder: (_) => StudentHomePage(userName: name),
+          ),
+        );
       }
     } on FirebaseAuthException catch (e) {
       ScaffoldMessenger.of(context)
