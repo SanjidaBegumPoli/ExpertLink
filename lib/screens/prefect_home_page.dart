@@ -1,39 +1,39 @@
 import 'package:flutter/material.dart';
-import 'profile_page.dart';
-import 'notification_page.dart';
-import 'settings_page.dart';
-import 'login_page.dart';
-import 'category_page.dart'; // added for navigation
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'create_blog_page.dart';
+import 'prefect_profile_page.dart';
 
-class StudentHomePage extends StatefulWidget {
+class PrefectHomePage extends StatefulWidget {
   final String userName;
+  final String userId;
+  final String category;
 
-  const StudentHomePage({super.key, required this.userName});
+  const PrefectHomePage({
+    super.key,
+    required this.userName,
+    required this.userId,
+    required this.category,
+  });
 
   @override
-  State<StudentHomePage> createState() => _StudentHomePageState();
+  State<PrefectHomePage> createState() => _PrefectHomePageState();
 }
 
-class _StudentHomePageState extends State<StudentHomePage> {
+class _PrefectHomePageState extends State<PrefectHomePage> {
   int _selectedIndex = 0;
 
-  final List<Widget> _pages = [];
-
-  @override
-  void initState() {
-    super.initState();
-    _pages.addAll([
-      _buildHomeView(),
-      const ProfilePage(),
-      const NotificationPage(),
-      const SettingsPage(),
-    ]);
+  void _onItemTapped(int index) {
+    setState(() => _selectedIndex = index);
   }
 
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+  // --- Firestore category fetching ---
+  Stream<QuerySnapshot> _fetchApprovedPrefects() {
+    return FirebaseFirestore.instance
+        .collection('users')
+        .where('role', isEqualTo: 'prefect')
+        .where('status', isEqualTo: 'approved')
+        .where('category', isEqualTo: widget.category)
+        .snapshots();
   }
 
   Widget _buildHomeView() {
@@ -42,16 +42,16 @@ class _StudentHomePageState extends State<StudentHomePage> {
       {"name": "UI/UX Design", "image": "lib/assets/UiUx.png"},
       {"name": "AI/ML", "image": "lib/assets/aiMl.png"},
       {"name": "Web Development", "image": "lib/assets/webDevelopment.png"},
-      {"name": "App Development", "image": "lib/assets/webDevelopment.png"},
-      {"name": "Cyber Security", "image": "lib/assets/aiMl.png"},
+      {"name": "App Development", "image": "lib/assets/CP.png"},
+      {"name": "Cyber Security", "image": "lib/assets/UiUx.png"},
       {"name": "Data Science", "image": "lib/assets/aiMl.png"},
-      {"name": "Networking", "image": "lib/assets/CP.png"},
+      {"name": "Networking", "image": "lib/assets/webDevelopment.png"},
     ];
 
     return Scaffold(
       body: Column(
         children: [
-          // Pink welcome section
+          // --- Pink Welcome Section ---
           Container(
             padding: const EdgeInsets.all(20),
             decoration: const BoxDecoration(
@@ -65,7 +65,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "Welcome, ${widget.userName} ",
+                  "Welcome, ${widget.userName}",
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 22,
@@ -79,8 +79,8 @@ class _StudentHomePageState extends State<StudentHomePage> {
                     prefixIcon: const Icon(Icons.search, color: Colors.pink),
                     filled: true,
                     fillColor: Colors.white,
-                    contentPadding: const EdgeInsets.symmetric(
-                        vertical: 0, horizontal: 16),
+                    contentPadding:
+                    const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(25),
                       borderSide: BorderSide.none,
@@ -93,7 +93,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
 
           const SizedBox(height: 15),
 
-          // Grid View of categories
+          // --- Grid View of categories ---
           Expanded(
             child: Padding(
               padding: const EdgeInsets.all(12.0),
@@ -114,12 +114,12 @@ class _StudentHomePageState extends State<StudentHomePage> {
                     child: InkWell(
                       borderRadius: BorderRadius.circular(15),
                       onTap: () {
-                        // ✅ Navigate to Category Page when tapped
+                        // When tapped → navigate to list of approved prefects in that category
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => CategoryPage(
-                              categoryTitle: category['name']!,
+                            builder: (_) => PrefectCategoryPage(
+                              category: category['name']!,
                             ),
                           ),
                         );
@@ -127,7 +127,6 @@ class _StudentHomePageState extends State<StudentHomePage> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          // Category image
                           Expanded(
                             child: Padding(
                               padding: const EdgeInsets.all(8.0),
@@ -138,7 +137,6 @@ class _StudentHomePageState extends State<StudentHomePage> {
                             ),
                           ),
                           const SizedBox(height: 6),
-                          // Category name
                           Padding(
                             padding:
                             const EdgeInsets.symmetric(horizontal: 8.0),
@@ -160,29 +158,41 @@ class _StudentHomePageState extends State<StudentHomePage> {
           ),
         ],
       ),
+    );
+  }
 
-      // Bottom navigation bar
+  // --- Build all 3 pages ---
+  @override
+  Widget build(BuildContext context) {
+    final List<Widget> pages = [
+      _buildHomeView(),
+      CreateBlogPage(userId: widget.userId),
+      PrefectProfilePage(userId: widget.userId),
+    ];
+
+    return Scaffold(
+      body: pages[_selectedIndex],
       bottomNavigationBar: Container(
         decoration: const BoxDecoration(
-          color: Colors.pink,
+          color: Colors.white,
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(25),
             topRight: Radius.circular(25),
           ),
+          boxShadow: [
+            BoxShadow(color: Colors.black12, blurRadius: 8, offset: Offset(0, -2))
+          ],
         ),
         child: BottomNavigationBar(
           items: const [
             BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
+            BottomNavigationBarItem(icon: Icon(Icons.edit), label: "Create Blog"),
             BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
-            BottomNavigationBarItem(
-                icon: Icon(Icons.notifications), label: "Notifications"),
-            BottomNavigationBarItem(
-                icon: Icon(Icons.settings), label: "Settings"),
           ],
           currentIndex: _selectedIndex,
           onTap: _onItemTapped,
-          selectedItemColor: Colors.white,
-          unselectedItemColor: Colors.white70,
+          selectedItemColor: Colors.pink,
+          unselectedItemColor: Colors.grey,
           backgroundColor: Colors.transparent,
           type: BottomNavigationBarType.fixed,
           elevation: 0,
@@ -190,9 +200,72 @@ class _StudentHomePageState extends State<StudentHomePage> {
       ),
     );
   }
+}
+
+//
+// 🔹 PAGE: PrefectCategoryPage
+// Shows all approved prefects in selected category
+//
+class PrefectCategoryPage extends StatelessWidget {
+  final String category;
+
+  const PrefectCategoryPage({super.key, required this.category});
 
   @override
   Widget build(BuildContext context) {
-    return _pages[_selectedIndex];
+    final Stream<QuerySnapshot> prefectStream = FirebaseFirestore.instance
+        .collection('users')
+        .where('role', isEqualTo: 'prefect')
+        .where('status', isEqualTo: 'approved')
+        .where('category', isEqualTo: category)
+        .snapshots();
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(category),
+        backgroundColor: Colors.pink,
+      ),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: prefectStream,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+            return const Center(
+              child: Text("No approved prefects available."),
+            );
+          }
+
+          final prefects = snapshot.data!.docs;
+
+          return ListView.builder(
+            padding: const EdgeInsets.all(12),
+            itemCount: prefects.length,
+            itemBuilder: (context, index) {
+              final data = prefects[index].data() as Map<String, dynamic>;
+              return Card(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15)),
+                elevation: 3,
+                margin: const EdgeInsets.symmetric(vertical: 8),
+                child: ListTile(
+                  leading: const CircleAvatar(
+                    backgroundColor: Colors.pink,
+                    child: Icon(Icons.person, color: Colors.white),
+                  ),
+                  title: Text(
+                    data['name'] ?? 'Unknown',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: Text(data['category'] ?? ''),
+                  trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                ),
+              );
+            },
+          );
+        },
+      ),
+    );
   }
 }

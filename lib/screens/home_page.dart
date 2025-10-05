@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'student_dashboard.dart';
-import 'prefect_dashboard.dart';
+
 import 'admin_dashboard.dart';
 
 class HomePage extends StatelessWidget {

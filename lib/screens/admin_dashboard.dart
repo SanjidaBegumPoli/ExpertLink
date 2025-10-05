@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'login_page.dart'; // ✅ import your login page
+import 'login_page.dart';
 
 class AdminDashboard extends StatelessWidget {
   const AdminDashboard({super.key});
