@@ -65,7 +65,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "Welcome, ${widget.userName} 👋",
+                  "Welcome, ${widget.userName} ",
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 22,
