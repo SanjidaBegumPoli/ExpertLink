@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'login_page.dart'; // make sure you import your login page
+import 'login_page.dart';
 
 class StudentDashboard extends StatelessWidget {
   @override

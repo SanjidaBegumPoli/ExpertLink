@@ -72,7 +72,7 @@ class _SettingsPageState extends State<SettingsPage> {
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            // 🌓 Theme Mode Switch Card
+            // theme modee
             Card(
               color: isDarkMode ? Colors.grey[850] : Colors.grey[100],
               shape: RoundedRectangleBorder(
@@ -99,7 +99,7 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             const SizedBox(height: 15),
 
-            // 👤 User Info Card
+            //user info here
             Card(
               color: isDarkMode ? Colors.grey[850] : Colors.grey[100],
               shape: RoundedRectangleBorder(
@@ -119,7 +119,7 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             const Spacer(),
 
-            // 🚪 Logout Button
+            // logot
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
@@ -142,7 +142,7 @@ class _SettingsPageState extends State<SettingsPage> {
         ),
       ),
 
-      // ✅ Bottom Navigation Bar
+      //Navigation Bar
       bottomNavigationBar: Container(
         decoration: const BoxDecoration(
           color: Colors.pink,

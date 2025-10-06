@@ -13,10 +13,10 @@ class NotificationPage extends StatefulWidget {
 
 class _NotificationPageState extends State<NotificationPage> {
   final User? user = FirebaseAuth.instance.currentUser;
-  int _selectedIndex = 2; // Notification tab active by default
+  int _selectedIndex = 2;
 
   void _onItemTapped(int index) {
-    if (index == _selectedIndex) return; // Already on this tab
+    if (index == _selectedIndex) return;
 
     switch (index) {
       case 0:
@@ -62,7 +62,7 @@ class _NotificationPageState extends State<NotificationPage> {
         ),
       ),
 
-      // ✅ Bottom Navigation Bar
+      // Bottom Navigation Bar
       bottomNavigationBar: Container(
         decoration: const BoxDecoration(
           color: Colors.pink,

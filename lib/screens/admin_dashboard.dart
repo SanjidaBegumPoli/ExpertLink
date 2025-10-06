@@ -54,7 +54,7 @@ class AdminDashboard extends StatelessWidget {
   }
 }
 
-// -------------------- Pending Prefect Approvals Page --------------------
+// Pending Prefect Approvals Page
 class PendingPrefectApprovalsPage extends StatelessWidget {
   const PendingPrefectApprovalsPage({super.key});
 
@@ -66,7 +66,7 @@ class PendingPrefectApprovalsPage extends StatelessWidget {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.pop(context); // ✅ back to AdminDashboard
+            Navigator.pop(context);
           },
         ),
       ),

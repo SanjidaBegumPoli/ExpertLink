@@ -4,6 +4,8 @@ import 'notification_page.dart';
 import 'settings_page.dart';
 import 'login_page.dart';
 import 'prefect_category_page.dart';
+import 'student_chat_list_page.dart';
+
 
 class StudentHomePage extends StatefulWidget {
   final String userName;
@@ -25,7 +27,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
     _pages.addAll([
       _buildHomeView(),
       const ProfilePage(),
-      const NotificationPage(),
+      const StudentChatListPage(userName: '',),
       const SettingsPage(),
     ]);
   }
@@ -114,7 +116,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
                     child: InkWell(
                       borderRadius: BorderRadius.circular(15),
                       onTap: () {
-                        // ✅ Navigate to PrefectCategoryPage
+                        //Navigate to PrefectCategoryPage
                         Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -172,7 +174,8 @@ class _StudentHomePageState extends State<StudentHomePage> {
             BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
             BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
             BottomNavigationBarItem(
-                icon: Icon(Icons.notifications), label: "Notifications"),
+                icon: Icon(Icons.chat), label: "Chat"),
+
             BottomNavigationBarItem(
                 icon: Icon(Icons.settings), label: "Settings"),
           ],

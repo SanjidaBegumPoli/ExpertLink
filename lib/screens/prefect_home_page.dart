@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'create_blog_page.dart';
 import 'prefect_profile_page.dart';
 import 'prefect_category_page.dart';
+import 'prefect_chat_list_page.dart';
 
 class PrefectHomePage extends StatefulWidget {
   final String userName;
@@ -93,7 +94,8 @@ class _PrefectHomePageState extends State<PrefectHomePage> {
                   final category = categories[index];
                   return Card(
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15)),
+                      borderRadius: BorderRadius.circular(15),
+                    ),
                     elevation: 3,
                     child: InkWell(
                       borderRadius: BorderRadius.circular(15),
@@ -113,8 +115,10 @@ class _PrefectHomePageState extends State<PrefectHomePage> {
                           Expanded(
                             child: Padding(
                               padding: const EdgeInsets.all(8.0),
-                              child: Image.asset(category["image"]!,
-                                  fit: BoxFit.contain),
+                              child: Image.asset(
+                                category["image"]!,
+                                fit: BoxFit.contain,
+                              ),
                             ),
                           ),
                           const SizedBox(height: 6),
@@ -122,7 +126,9 @@ class _PrefectHomePageState extends State<PrefectHomePage> {
                             category["name"]!,
                             textAlign: TextAlign.center,
                             style: const TextStyle(
-                                fontSize: 14, fontWeight: FontWeight.w600),
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                           const SizedBox(height: 10),
                         ],
@@ -144,10 +150,14 @@ class _PrefectHomePageState extends State<PrefectHomePage> {
       _buildHomeView(),
       CreateBlogPage(userId: widget.userId),
       PrefectProfilePage(userId: widget.userId),
+      const PrefectChatListPage(),
     ];
 
     return Scaffold(
-      body: pages[_selectedIndex],
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: pages,
+      ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         selectedItemColor: Colors.pink,
@@ -157,6 +167,7 @@ class _PrefectHomePageState extends State<PrefectHomePage> {
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.edit), label: 'Create Blog'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+          BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'Chat'),
         ],
       ),
     );

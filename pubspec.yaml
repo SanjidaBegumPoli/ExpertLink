@@ -23,6 +23,8 @@ dependencies:
   google_sign_in: ^6.1.0
   http: ^1.2.0
   image_picker: ^1.1.1
+  file_picker: ^10.3.3
+  url_launcher: ^6.3.0
 
 dev_dependencies:
   flutter_test:

@@ -9,7 +9,7 @@ class PendingApprovalPage extends StatelessWidget {
       appBar: AppBar(title: const Text("Pending Approval")),
       body: const Center(
         child: Text(
-          "⏳ Your account is waiting for admin approval.\nPlease check back later.",
+          "Your account is waiting for admin approval.\nPlease check again later.",
           textAlign: TextAlign.center,
           style: TextStyle(fontSize: 18),
         ),

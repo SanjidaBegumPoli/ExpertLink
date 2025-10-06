@@ -37,7 +37,7 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> loginUser() async {
     setState(() => isLoading = true);
     try {
-      // 🔹 Step 1: Authenticate user
+      //Authenticate user
       UserCredential userCredential = await _auth.signInWithEmailAndPassword(
         email: emailController.text.trim(),
         password: passwordController.text.trim(),
@@ -46,20 +46,20 @@ class _LoginPageState extends State<LoginPage> {
       User? user = userCredential.user;
       if (user == null) throw Exception("No user found");
 
-      // 🔹 Step 2: Get Firestore user data
+      //Get Firestore user data
       final doc = await _firestore.collection('users').doc(user.uid).get();
       if (!doc.exists) throw Exception("User data not found in Firestore");
 
       final data = doc.data()!;
       print("User Firestore data: $data"); // DEBUG PRINT
 
-      // 🔹 Step 3: Extract safely with defaults
+      //Extract safely with defaults
       final role = data['role'] ?? '';
       final status = data['status'] ?? '';
       final name = data['name'] ?? 'User';
       final category = data['category'] ?? '';
 
-      // 🔹 Step 4: Navigate based on role
+      //Navigate based on role
       if (role == 'admin') {
         Navigator.pushReplacement(
           context,
