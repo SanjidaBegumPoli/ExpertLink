@@ -13,6 +13,7 @@ dependencies:
 
   # UI
   cupertino_icons: ^1.0.8
+  provider: ^6.0.5
 
   # Firebase
   firebase_core: ^4.1.0
@@ -20,6 +21,8 @@ dependencies:
   cloud_firestore: ^6.0.1
 
   google_sign_in: ^6.1.0
+  http: ^1.2.0
+  image_picker: ^1.1.1
 
 dev_dependencies:
   flutter_test:
@@ -34,3 +37,5 @@ flutter:
     - lib/assets/CP.png
     - lib/assets/UiUx.png
     - lib/assets/webDevelopment.png
+    - lib/assets/app_development.png
+    - lib/assets/cyberSecurity.png

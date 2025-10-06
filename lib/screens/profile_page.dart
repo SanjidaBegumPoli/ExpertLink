@@ -14,7 +14,7 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   final User? user = FirebaseAuth.instance.currentUser;
-  int _selectedIndex = 1; // Profile tab active
+  int _selectedIndex = 1;
 
   void _onItemTapped(int index) {
     if (index == _selectedIndex) return;
