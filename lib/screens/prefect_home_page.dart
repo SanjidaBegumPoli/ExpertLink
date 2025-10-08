@@ -148,7 +148,7 @@ class _PrefectHomePageState extends State<PrefectHomePage> {
   Widget build(BuildContext context) {
     final List<Widget> pages = [
       _buildHomeView(),
-      CreateBlogPage(userId: widget.userId),
+      CreateBlogPage(prefectId: widget.userId),
       PrefectProfilePage(userId: widget.userId),
       const PrefectChatListPage(),
     ];
