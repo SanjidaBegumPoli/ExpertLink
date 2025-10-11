@@ -58,7 +58,7 @@ class _SignupPageState extends State<SignupPage> {
       RegExp(r'^(01[3-9]\d{8})$').hasMatch(phone);
 
   bool _validateStudentId(String id) =>
-      RegExp(r'^(01822\d{9})$').hasMatch(id);
+      RegExp(r'^(0182\d{12})$').hasMatch(id);
 
   bool _validatePassword(String password) =>
       RegExp(r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#\$&*~])[A-Za-z\d!@#\$&*~]{6,20}$')
@@ -90,7 +90,8 @@ class _SignupPageState extends State<SignupPage> {
     }
     if (!_validatePhone(phone)) {
       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Enter a valid phone number (01XXXXXXXXXX)')));
+          const SnackBar(
+              content: Text('Enter a valid phone number (01XXXXXXXXXX)')));
       return;
     }
     if (!_validateStudentId(studentId)) {
