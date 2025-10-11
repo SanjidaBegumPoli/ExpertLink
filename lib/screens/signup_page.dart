@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'login_page.dart';
-import 'home_page.dart';
 import 'pending_approval_page.dart';
 import 'student_home.dart';
 
@@ -30,6 +29,9 @@ class _SignupPageState extends State<SignupPage> {
   String selectedRole = 'student';
   bool isLoading = false;
 
+  bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
+
   InputDecoration _inputDecoration(String label, IconData icon) {
     return InputDecoration(
       labelText: label,
@@ -45,7 +47,7 @@ class _SignupPageState extends State<SignupPage> {
         borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide(color: Colors.pink.shade500, width: 2),
       ),
-      hintStyle: TextStyle(color: Colors.pink.shade500),
+      hintStyle: TextStyle(color: Colors.black),
     );
   }
 
@@ -53,10 +55,14 @@ class _SignupPageState extends State<SignupPage> {
       RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
 
   bool _validatePhone(String phone) =>
-      RegExp(r'^\d{10,15}$').hasMatch(phone);
+      RegExp(r'^(01[3-9]\d{8})$').hasMatch(phone);
+
+  bool _validateStudentId(String id) =>
+      RegExp(r'^(01822\d{9})$').hasMatch(id);
 
   bool _validatePassword(String password) =>
-      RegExp(r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$').hasMatch(password);
+      RegExp(r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#\$&*~])[A-Za-z\d!@#\$&*~]{6,20}$')
+          .hasMatch(password);
 
   Future<void> _signUp() async {
     String name = _nameController.text.trim();
@@ -64,34 +70,43 @@ class _SignupPageState extends State<SignupPage> {
     String password = _passwordController.text.trim();
     String confirmPassword = _confirmPasswordController.text.trim();
     String phone = _phoneController.text.trim();
+    String studentId = _studentIdController.text.trim();
+
 
     if (name.isEmpty ||
         email.isEmpty ||
         password.isEmpty ||
         confirmPassword.isEmpty ||
-        phone.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please fill all required fields')));
+        phone.isEmpty ||
+        studentId.isEmpty) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Please fill all required fields')));
       return;
     }
     if (!_validateEmail(email)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Enter a valid email')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Enter a valid email')));
       return;
     }
     if (!_validatePhone(phone)) {
       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Enter a valid phone number')));
+          const SnackBar(content: Text('Enter a valid phone number (01XXXXXXXXXX)')));
+      return;
+    }
+    if (!_validateStudentId(studentId)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Invalid Student ID (must start with 01822 + 9 digits)')));
       return;
     }
     if (!_validatePassword(password)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Password must be at least 6 characters and contain letters & numbers')));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text(
+              'Password must be 6–20 chars, include letters, numbers & one special character')));
       return;
     }
     if (password != confirmPassword) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Passwords do not match')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Passwords do not match')));
       return;
     }
 
@@ -106,9 +121,11 @@ class _SignupPageState extends State<SignupPage> {
         'email': email,
         'role': selectedRole,
         'status': selectedRole == 'prefect' ? 'pending' : 'approved',
-        'skills': selectedRole == 'prefect' ? [_expertiseController.text.trim()] : [],
+        'skills': selectedRole == 'prefect'
+            ? [_expertiseController.text.trim()]
+            : [],
         'phone': phone,
-        'studentId': _studentIdController.text.trim(),
+        'studentId': studentId,
         'batch': _batchController.text.trim(),
         'department': _deptController.text.trim(),
         'createdAt': FieldValue.serverTimestamp(),
@@ -148,7 +165,6 @@ class _SignupPageState extends State<SignupPage> {
           child: Column(
             children: [
               const SizedBox(height: 30),
-              // Logo
               Center(
                 child: Container(
                   height: 90,
@@ -171,8 +187,8 @@ class _SignupPageState extends State<SignupPage> {
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
-              const Text(
+              SizedBox(height: 20),
+              Text(
                 "Sign Up",
                 style: TextStyle(
                     fontSize: 30,
@@ -180,17 +196,19 @@ class _SignupPageState extends State<SignupPage> {
                     fontFamily: 'Ubuntu',
                     color: Colors.pinkAccent),
               ),
-              const SizedBox(height: 5),
-              const Text(
+              SizedBox(height: 5),
+              Text(
                 "Create your ExpertLink account",
                 style: TextStyle(
-                    fontSize: 16, color: Colors.pinkAccent, fontWeight: FontWeight.bold),
+                    fontSize: 16,
+                    color: Colors.pinkAccent,
+                    fontWeight: FontWeight.bold),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
 
-              // Role Dropdown
+              // Role dropdown
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding:  EdgeInsets.symmetric(horizontal: 16),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(12),
@@ -198,69 +216,113 @@ class _SignupPageState extends State<SignupPage> {
                 ),
                 child: DropdownButtonFormField<String>(
                   value: selectedRole,
-                  items: const [
+                  items: [
                     DropdownMenuItem(value: 'student', child: Text('Student')),
                     DropdownMenuItem(value: 'prefect', child: Text('Prefect')),
                   ],
                   onChanged: (value) => setState(() => selectedRole = value!),
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: 'Select Role',
                     border: InputBorder.none,
                   ),
                 ),
               ),
+              SizedBox(height: 15),
 
-              const SizedBox(height: 15),
               _buildRoundedTextField(_nameController, "Full Name", Icons.person),
-              const SizedBox(height: 10),
-              _buildRoundedTextField(_emailController, "Email", Icons.alternate_email, keyboardType: TextInputType.emailAddress),
-              const SizedBox(height: 10),
-              _buildRoundedTextField(_passwordController, "Password", Icons.password, obscureText: true),
-              const SizedBox(height: 10),
-              _buildRoundedTextField(_confirmPasswordController, "Confirm Password", Icons.password, obscureText: true),
-              const SizedBox(height: 10),
-              _buildRoundedTextField(_phoneController, "Phone Number", Icons.phone, keyboardType: TextInputType.phone),
-              const SizedBox(height: 10),
-              _buildRoundedTextField(_studentIdController, "Student ID", Icons.school),
-              const SizedBox(height: 10),
-              _buildRoundedTextField(_batchController, "Batch", Icons.date_range),
-              const SizedBox(height: 10),
-              _buildRoundedTextField(_deptController, "Department", Icons.account_balance),
-              const SizedBox(height: 10),
+              SizedBox(height: 10),
+              _buildRoundedTextField(_emailController, "Email", Icons.email,
+                  keyboardType: TextInputType.emailAddress),
+              SizedBox(height: 10),
+
+              TextField(
+                controller: _passwordController,
+                obscureText: _obscurePassword,
+                decoration: _inputDecoration("Password", Icons.lock).copyWith(
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                      color: Colors.pink,
+                    ),
+                    onPressed: () =>
+                        setState(() => _obscurePassword = !_obscurePassword),
+                  ),
+                ),
+              ),
+              SizedBox(height: 10),
+
+
+              TextField(
+                controller: _confirmPasswordController,
+                obscureText: _obscureConfirmPassword,
+                decoration:
+                _inputDecoration("Confirm Password", Icons.lock).copyWith(
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _obscureConfirmPassword
+                          ? Icons.visibility_off
+                          : Icons.visibility,
+                      color: Colors.pink,
+                    ),
+                    onPressed: () => setState(() =>
+                    _obscureConfirmPassword = !_obscureConfirmPassword),
+                  ),
+                ),
+              ),
+              SizedBox(height: 10),
+
+              _buildRoundedTextField(
+                  _phoneController, "Phone Number", Icons.phone,
+                  keyboardType: TextInputType.phone),
+              SizedBox(height: 10),
+              _buildRoundedTextField(
+                  _studentIdController, "Student ID", Icons.badge),
+              SizedBox(height: 10),
+              _buildRoundedTextField(
+                  _batchController, "Batch", Icons.date_range),
+              SizedBox(height: 10),
+              _buildRoundedTextField(
+                  _deptController, "Department", Icons.account_balance),
+              SizedBox(height: 10),
               if (selectedRole == 'prefect')
-                _buildRoundedTextField(_expertiseController, "Expertise Field", Icons.star),
+                _buildRoundedTextField(
+                    _expertiseController, "Expertise Field", Icons.star),
 
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
 
-              // Signup Button
+              // Sign up button
               SizedBox(
                 width: double.infinity,
                 height: 50,
                 child: ElevatedButton(
                   onPressed: isLoading ? null : _signUp,
                   style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.pink,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25))),
+                    backgroundColor: Colors.pink,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(25)),
+                  ),
                   child: isLoading
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text("Sign Up",
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                      ? CircularProgressIndicator(color: Colors.white)
+                      : Text("Sign Up",
+                      style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white)),
                 ),
               ),
 
-              const SizedBox(height: 10),
+              SizedBox(height: 10),
 
-              // Already have an account
               TextButton(
-                onPressed: () => Navigator.pushReplacement(context,
-                    MaterialPageRoute(builder: (_) => const LoginPage())),
-                child: const Text(
+                onPressed: () => Navigator.pushReplacement(
+                    context, MaterialPageRoute(builder: (_) => LoginPage())),
+                child: Text(
                   "Already have an account? Login",
-                  style: TextStyle(color: Colors.pinkAccent, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                      color: Colors.pinkAccent, fontWeight: FontWeight.bold),
                 ),
               ),
-
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
             ],
           ),
         ),
@@ -268,13 +330,15 @@ class _SignupPageState extends State<SignupPage> {
     );
   }
 
-  Widget _buildRoundedTextField(TextEditingController controller, String label, IconData icon,
-      {bool obscureText = false, TextInputType keyboardType = TextInputType.text}) {
+  Widget _buildRoundedTextField(TextEditingController controller, String label,
+      IconData icon,
+      {bool obscureText = false,
+        TextInputType keyboardType = TextInputType.text}) {
     return TextField(
       controller: controller,
       obscureText: obscureText,
       keyboardType: keyboardType,
-      style: TextStyle(color: Colors.pink.shade500),
+      style: TextStyle(color: Colors.black),
       decoration: _inputDecoration(label, icon),
     );
   }

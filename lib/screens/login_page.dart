@@ -19,7 +19,9 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController passwordController = TextEditingController();
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
   bool isLoading = false;
+  bool _obscurePassword = true; // 👁️ Toggle variable
 
   final Color primary = const Color(0xFF343341);
   final Color alternate = const Color(0xFFE0E3E7);
@@ -37,7 +39,6 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> loginUser() async {
     setState(() => isLoading = true);
     try {
-      //Authenticate user
       UserCredential userCredential = await _auth.signInWithEmailAndPassword(
         email: emailController.text.trim(),
         password: passwordController.text.trim(),
@@ -46,20 +47,15 @@ class _LoginPageState extends State<LoginPage> {
       User? user = userCredential.user;
       if (user == null) throw Exception("No user found");
 
-      //Get Firestore user data
       final doc = await _firestore.collection('users').doc(user.uid).get();
       if (!doc.exists) throw Exception("User data not found in Firestore");
 
       final data = doc.data()!;
-      print("User Firestore data: $data"); // DEBUG PRINT
-
-      //Extract safely with defaults
       final role = data['role'] ?? '';
       final status = data['status'] ?? '';
       final name = data['name'] ?? 'User';
       final category = data['category'] ?? '';
 
-      //Navigate based on role
       if (role == 'admin') {
         Navigator.pushReplacement(
           context,
@@ -94,11 +90,13 @@ class _LoginPageState extends State<LoginPage> {
         throw Exception("Invalid role");
       }
     } on FirebaseAuthException catch (e) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Auth error: ${e.message}')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Auth error: ${e.message}')),
+      );
     } catch (e) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Error: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
     } finally {
       setState(() => isLoading = false);
     }
@@ -110,10 +108,10 @@ class _LoginPageState extends State<LoginPage> {
       backgroundColor: Colors.white,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
+          padding: EdgeInsets.symmetric(horizontal: 20),
           child: Column(
             children: [
-              const SizedBox(height: 30),
+              SizedBox(height: 30),
 
               // Logo
               Center(
@@ -124,7 +122,7 @@ class _LoginPageState extends State<LoginPage> {
                     color: Colors.pink.shade50,
                     borderRadius: BorderRadius.circular(360),
                   ),
-                  child: const Center(
+                  child: Center(
                     child: Text(
                       "ExpertLink",
                       style: TextStyle(
@@ -139,10 +137,10 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
 
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
 
               // Title
-              const Text(
+              Text(
                 "Login",
                 style: TextStyle(
                   fontSize: 30,
@@ -151,8 +149,8 @@ class _LoginPageState extends State<LoginPage> {
                   color: Colors.pinkAccent,
                 ),
               ),
-              const SizedBox(height: 5),
-              const Text(
+              SizedBox(height: 5),
+              Text(
                 "Login to continue with ExpertLink",
                 style: TextStyle(
                   fontSize: 16,
@@ -161,11 +159,11 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
 
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
 
               // Input Card
               Container(
-                padding: const EdgeInsets.all(15),
+                padding: EdgeInsets.all(15),
                 decoration: BoxDecoration(
                   color: Colors.grey.shade100,
                   borderRadius: BorderRadius.circular(15),
@@ -173,53 +171,64 @@ class _LoginPageState extends State<LoginPage> {
                     BoxShadow(
                       color: Colors.grey.shade300,
                       blurRadius: 10,
-                      offset: const Offset(0, 5),
+                      offset: Offset(0, 5),
                     ),
                   ],
                 ),
                 child: Column(
                   children: [
+                    // Email field
                     TextField(
                       controller: emailController,
-                      style: TextStyle(color: Colors.pink.shade500),
-                      decoration:
-                      _inputDecoration("Email", Icons.alternate_email)
+                      style: TextStyle(color: Colors.black),
+                      decoration: _inputDecoration("Email", Icons.alternate_email)
                           .copyWith(
-                        hintStyle: TextStyle(color: Colors.pink.shade500),
                         prefixIcon: Icon(Icons.alternate_email,
                             color: Colors.pink.shade500),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
-                          borderSide:
-                          BorderSide(color: Colors.pink.shade500),
+                          borderSide: BorderSide(color: Colors.pink.shade500),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide(
-                              color: Colors.pink.shade500, width: 2),
+                          borderSide:
+                          BorderSide(color: Colors.pink.shade500, width: 2),
                         ),
                       ),
                     ),
-                    const SizedBox(height: 10),
+                    SizedBox(height: 10),
+
+
                     TextField(
                       controller: passwordController,
-                      obscureText: true,
-                      style: TextStyle(color: Colors.pink.shade500),
+                      obscureText: _obscurePassword,
+                      style: TextStyle(color: Colors.black),
                       decoration:
                       _inputDecoration("Password", Icons.password_sharp)
                           .copyWith(
-                        hintStyle: TextStyle(color: Colors.pink.shade500),
                         prefixIcon: Icon(Icons.password_sharp,
                             color: Colors.pink.shade500),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscurePassword
+                                ? Icons.visibility_off
+                                : Icons.visibility,
+                            color: Colors.pink.shade400,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _obscurePassword = !_obscurePassword;
+                            });
+                          },
+                        ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
-                          borderSide:
-                          BorderSide(color: Colors.pink.shade500),
+                          borderSide: BorderSide(color: Colors.pink.shade500),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide(
-                              color: Colors.pink.shade500, width: 2),
+                          borderSide:
+                          BorderSide(color: Colors.pink.shade500, width: 2),
                         ),
                       ),
                     ),
@@ -227,7 +236,7 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
 
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
 
               // Login Button
               SizedBox(
@@ -242,8 +251,8 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
                   child: isLoading
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text(
+                      ? CircularProgressIndicator(color: Colors.white)
+                      : Text(
                     "Login",
                     style: TextStyle(
                       fontSize: 18,
@@ -254,15 +263,15 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
 
-              const SizedBox(height: 15),
+              SizedBox(height: 15),
 
               // Navigate to Signup
               TextButton(
                 onPressed: () => Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => const SignupPage()),
+                  MaterialPageRoute(builder: (_) => SignupPage()),
                 ),
-                child: const Text(
+                child: Text(
                   "Don’t have an account? Sign up",
                   style: TextStyle(
                     fontWeight: FontWeight.bold,

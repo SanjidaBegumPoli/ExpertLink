@@ -47,7 +47,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
       {"name": "App Development", "image": "lib/assets/app_development.png"},
       {"name": "Cyber Security", "image": "lib/assets/cyberSecurity.png"},
       {"name": "Data Science", "image": "lib/assets/aiMl.png"},
-      {"name": "Networking", "image": "lib/assets/CP.png"},
+      //{"name": "Networking", "image": "lib/assets/CP.png"},
     ];
 
     return Scaffold(

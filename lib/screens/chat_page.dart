@@ -47,7 +47,7 @@ class _ChatPageState extends State<ChatPage> {
                   .orderBy('timestamp', descending: false)
                   .snapshots(),
               builder: (context, snapshot) {
-                if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
+                if (!snapshot.hasData) return  Center(child: CircularProgressIndicator());
 
                 final messages = snapshot.data!.docs;
 

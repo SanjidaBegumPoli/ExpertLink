@@ -25,7 +25,7 @@ class BlogModel {
       id: doc.id,
       title: data['title'] ?? '',
       content: data['content'] ?? '',
-      prefectId: data['prefectId'] ?? data['prefectid'] ?? '', // ✅ supports both
+      prefectId: data['prefectId'] ?? data['prefectid'] ?? '', // supports both
       assetName: data['assetName'],
       assetUrl: data['assetUrl'],
       createdAt: data['createdAt'],

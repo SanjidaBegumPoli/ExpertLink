@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'login_page.dart';
@@ -25,31 +24,35 @@ class _AdminDashboardState extends State<AdminDashboard> {
     ]);
   }
 
-  void _onItemTapped(int index) {
-    setState(() => _selectedIndex = index);
-  }
+  void _onItemTapped(int index) => setState(() => _selectedIndex = index);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Admin Panel"),
+        title: Text("Admin Panel",
+            style: TextStyle(
+                color: Colors.white
+            )
+        ),
         backgroundColor: Colors.pink,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: Icon(
+              Icons.arrow_back,
+              color: Colors.white),
           onPressed: () {
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (_) => const LoginPage()),
+              MaterialPageRoute(builder: (_) => LoginPage()),
             );
           },
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.notifications),
+            icon: Icon(Icons.notifications),
             onPressed: () {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("No new notifications.")),
+                SnackBar(content: Text("No new notifications.")),
               );
             },
           ),
@@ -61,7 +64,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
         selectedItemColor: Colors.pink,
         unselectedItemColor: Colors.grey,
         onTap: _onItemTapped,
-        items: const [
+        items: [
           BottomNavigationBarItem(
             icon: Icon(Icons.pending_actions),
             label: "Pending Prefects",
@@ -80,137 +83,21 @@ class _AdminDashboardState extends State<AdminDashboard> {
   }
 }
 
-// safe fetch field and fallback
-String _getFirstNonEmpty(Map<String, dynamic> data, List<String> keys) {
-  for (final k in keys) {
-    final v = data[k];
-    if (v != null) {
-      if (v is String && v.trim().isNotEmpty) return v.trim();
-      if (v is List && v.isNotEmpty) return v.join(', ');
-      if (v is num) return v.toString();
-    }
-  }
-  return '';
+// Helper function
+String _safeGet(Map<String, dynamic> data, String key) {
+  final val = data[key];
+  if (val == null) return '';
+  if (val is List && val.isNotEmpty) return val.join(', ');
+  return val.toString();
 }
 
-//Reusable card widget (uses Row + Expanded so text won't stack)
-Widget _userCard({
-  required BuildContext context,
-  required String docId,
-  required Map<String, dynamic> data,
-  required bool isPending,
-  required VoidCallback onApprove,
-  required VoidCallback onReject,
-  required VoidCallback onDelete,
-  required VoidCallback onTap,
-}) {
-  final name = _getFirstNonEmpty(data, ['name', 'fullName']) ;
-  final email = _getFirstNonEmpty(data, ['email']) ;
-  final batch = _getFirstNonEmpty(data, ['batch', 'year']) ;
-  final contact = _getFirstNonEmpty(data, ['contact', 'phone', 'mobile']) ;
-  // category might be string or skills array
-  final category = _getFirstNonEmpty(data, ['category', 'expertise', 'skills']) ;
-
-  return Card(
-    margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-    elevation: 3,
-    child: InkWell(
-      borderRadius: BorderRadius.circular(12),
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const CircleAvatar(
-              radius: 26,
-              backgroundColor: Colors.pink,
-              child: Icon(Icons.person, color: Colors.white),
-            ),
-            const SizedBox(width: 12),
-
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Name
-                  Text(
-                    name.isNotEmpty ? name : 'No name',
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 6),
-                  // Email (single line, ellipsis if long)
-                  if (email.isNotEmpty)
-                    Text(
-                      "Email: $email",
-                      style: const TextStyle(fontSize: 14),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  // Batch
-                  if (batch.isNotEmpty)
-                    Text(
-                      "Batch: $batch",
-                      style: const TextStyle(fontSize: 14),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  // Contact
-                  if (contact.isNotEmpty)
-                    Text(
-                      "Contact: $contact",
-                      style: const TextStyle(fontSize: 14),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  // Category / Expertise
-                  if (category.isNotEmpty)
-                    Text(
-                      "Expertise: $category",
-                      style: const TextStyle(fontSize: 14),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                ],
-              ),
-            ),
-
-            const SizedBox(width: 8),
-
-            // Right side actions
-            isPending
-                ? Row(
-              children: [
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-                  onPressed: onApprove,
-                  child: const Text("Approve"),
-                ),
-                const SizedBox(width: 6),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                  onPressed: onReject,
-                  child: const Text("Reject"),
-                ),
-              ],
-            )
-                : IconButton(
-              icon: const Icon(Icons.delete, color: Colors.red),
-              onPressed: onDelete,
-            ),
-          ],
-        ),
-      ),
-    ),
-  );
-}
-
-// Pending Prefect Approvals Page
+//Pending Prefect Approvals
 class PendingPrefectApprovalsPage extends StatelessWidget {
-  const PendingPrefectApprovalsPage({super.key});
+  const PendingPrefectApprovalsPage(
+      {
+        super.key
+      }
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -224,40 +111,107 @@ class PendingPrefectApprovalsPage extends StatelessWidget {
       stream: stream,
       builder: (context, snap) {
         if (snap.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
+          return
+            Center(
+                child: CircularProgressIndicator()
+            );
         }
         if (!snap.hasData || snap.data!.docs.isEmpty) {
-          return const Center(child: Text('No pending prefects.'));
+          return
+            Center(
+                child: Text
+                  (
+                    "No pending prefects."
+                )
+            );
         }
+
         final docs = snap.data!.docs;
         return ListView.builder(
-          padding: const EdgeInsets.only(bottom: 12),
           itemCount: docs.length,
+          padding: EdgeInsets.all(12),
           itemBuilder: (context, index) {
             final doc = docs[index];
             final data = doc.data() as Map<String, dynamic>;
-            return _userCard(
-              context: context,
-              docId: doc.id,
-              data: data,
-              isPending: true,
-              onApprove: () async {
-                await FirebaseFirestore.instance.collection('users').doc(doc.id).update({'status':'approved'});
-                // add notification entry for this user (optional)
-                await FirebaseFirestore.instance.collection('notifications').add({
-                  'toUserId': doc.id,
-                  'title': 'Your Prefect application approved',
-                  'message': 'Congrats! Your account is approved by admin.',
-                  'timestamp': FieldValue.serverTimestamp(),
-                });
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${_getFirstNonEmpty(data, ['name'])} approved')));
-              },
-              onReject: () async {
-                await FirebaseFirestore.instance.collection('users').doc(doc.id).delete();
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${_getFirstNonEmpty(data, ['name'])} rejected & removed')));
-              },
-              onDelete: () {},
-              onTap: () => _showDetailDialog(context, data),
+
+            return Card(
+              margin: EdgeInsets.only(bottom: 12),
+              elevation: 3,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              child: Padding(
+                padding: EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        CircleAvatar(
+                          backgroundColor: Colors.pink,
+                          child: Icon(Icons.person, color: Colors.white),
+                        ),
+                        SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            data['name'] ?? 'No name',
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 10),
+                    Text("Email: ${_safeGet(data, 'email')}"),
+                    Text("Batch: ${_safeGet(data, 'batch')}"),
+                    Text("Contact: ${_safeGet(data, 'phone')}"),
+                    Text("Expertise: ${_safeGet(data, 'expertise')}"),
+                    SizedBox(
+                        height: 10
+                    ),
+                    Row(
+                      children: [
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.green),
+                          onPressed: () async {
+                            await FirebaseFirestore.instance
+                                .collection('users')
+                                .doc(doc.id)
+                                .update({'status': 'approved'});
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                    content: Text(
+                                        "${data['name']} approved"
+                                    )
+                                )
+                            );
+                          },
+                          child: Text("Approve"),
+                        ),
+                        SizedBox(width: 10),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red),
+                          onPressed: () async {
+                            await FirebaseFirestore.instance
+                                .collection('users')
+                                .doc(doc.id)
+                                .delete();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text("${data['name']} rejected")));
+                          },
+                          child: Text("Reject"),
+                        ),
+                        Spacer(),
+                        IconButton(
+                          icon: Icon(Icons.info, color: Colors.pink),
+                          onPressed: () => _showDetailDialog(context, data),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
             );
           },
         );
@@ -266,37 +220,58 @@ class PendingPrefectApprovalsPage extends StatelessWidget {
   }
 }
 
-//Student Profiles Page
+//Student Profiles
 class StudentProfilesPage extends StatelessWidget {
   const StudentProfilesPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final stream = FirebaseFirestore.instance.collection('users').where('role', isEqualTo: 'student').snapshots();
+    final stream = FirebaseFirestore.instance
+        .collection('users')
+        .where('role', isEqualTo: 'student')
+        .snapshots();
 
     return StreamBuilder<QuerySnapshot>(
       stream: stream,
       builder: (context, snap) {
-        if (snap.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator());
-        if (!snap.hasData || snap.data!.docs.isEmpty) return const Center(child: Text('No students found.'));
+        if (snap.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (!snap.hasData || snap.data!.docs.isEmpty) {
+          return const Center(child: Text("No students found."));
+        }
+
         final docs = snap.data!.docs;
         return ListView.builder(
-          padding: const EdgeInsets.only(bottom: 12),
           itemCount: docs.length,
+          padding: const EdgeInsets.all(12),
           itemBuilder: (context, index) {
-            final doc = docs[index];
-            final data = doc.data() as Map<String, dynamic>;
-            return _userCard(
-              context: context,
-              docId: doc.id,
-              data: data,
-              isPending: false,
-              onApprove: () {},
-              onReject: () {},
-              onDelete: () async {
-                await FirebaseFirestore.instance.collection('users').doc(doc.id).delete();
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${_getFirstNonEmpty(data, ['name'])} removed')));
-              },
+            final data = docs[index].data() as Map<String, dynamic>;
+            return ListTile(
+              leading: const CircleAvatar(
+                backgroundColor: Colors.pink,
+                child: Icon(Icons.person, color: Colors.white),
+              ),
+              title: Text(data['name'] ?? 'No name'),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text("Email: ${_safeGet(data, 'email')}"),
+                  Text("Batch: ${_safeGet(data, 'batch')}"),
+                  Text("Expertise: ${_safeGet(data, 'expertise')}"),
+                ],
+              ),
+              trailing: IconButton(
+                icon: const Icon(Icons.delete, color: Colors.red),
+                onPressed: () async {
+                  await FirebaseFirestore.instance
+                      .collection('users')
+                      .doc(docs[index].id)
+                      .delete();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("${data['name']} removed")));
+                },
+              ),
               onTap: () => _showDetailDialog(context, data),
             );
           },
@@ -306,7 +281,7 @@ class StudentProfilesPage extends StatelessWidget {
   }
 }
 
-//Prefect Profiles Page
+//Approved Prefect Profiles
 class PrefectProfilesPage extends StatelessWidget {
   const PrefectProfilesPage({super.key});
 
@@ -321,26 +296,44 @@ class PrefectProfilesPage extends StatelessWidget {
     return StreamBuilder<QuerySnapshot>(
       stream: stream,
       builder: (context, snap) {
-        if (snap.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator());
-        if (!snap.hasData || snap.data!.docs.isEmpty) return const Center(child: Text('No approved prefects.'));
+        if (snap.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (!snap.hasData || snap.data!.docs.isEmpty) {
+          return const Center(child: Text("No approved prefects."));
+        }
+
         final docs = snap.data!.docs;
         return ListView.builder(
-          padding: const EdgeInsets.only(bottom: 12),
           itemCount: docs.length,
+          padding: const EdgeInsets.all(12),
           itemBuilder: (context, index) {
-            final doc = docs[index];
-            final data = doc.data() as Map<String, dynamic>;
-            return _userCard(
-              context: context,
-              docId: doc.id,
-              data: data,
-              isPending: false,
-              onApprove: () {},
-              onReject: () {},
-              onDelete: () async {
-                await FirebaseFirestore.instance.collection('users').doc(doc.id).delete();
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${_getFirstNonEmpty(data, ['name'])} removed')));
-              },
+            final data = docs[index].data() as Map<String, dynamic>;
+            return ListTile(
+              leading: const CircleAvatar(
+                backgroundColor: Colors.pink,
+                child: Icon(Icons.person, color: Colors.white),
+              ),
+              title: Text(data['name'] ?? 'No name'),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text("Email: ${_safeGet(data, 'email')}"),
+                  Text("Batch: ${_safeGet(data, 'batch')}"),
+                  Text("Expertise: ${_safeGet(data, 'expertise')}"),
+                ],
+              ),
+              trailing: IconButton(
+                icon: const Icon(Icons.delete, color: Colors.red),
+                onPressed: () async {
+                  await FirebaseFirestore.instance
+                      .collection('users')
+                      .doc(docs[index].id)
+                      .delete();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("${data['name']} removed")));
+                },
+              ),
               onTap: () => _showDetailDialog(context, data),
             );
           },
@@ -350,14 +343,8 @@ class PrefectProfilesPage extends StatelessWidget {
   }
 }
 
-//show detail dialog
+//Show detail dialog
 void _showDetailDialog(BuildContext context, Map<String, dynamic> data) {
-  final name = _getFirstNonEmpty(data, ['name']);
-  final email = _getFirstNonEmpty(data, ['email']);
-  final batch = _getFirstNonEmpty(data, ['batch', 'year']);
-  final contact = _getFirstNonEmpty(data, ['contact', 'phone', 'mobile']);
-  final category = _getFirstNonEmpty(data, ['category', 'expertise', 'skills']);
-
   showDialog(
     context: context,
     builder: (context) => AlertDialog(
@@ -365,16 +352,13 @@ void _showDetailDialog(BuildContext context, Map<String, dynamic> data) {
       title: Row(
         children: [
           const CircleAvatar(
-              backgroundColor: Colors.pink,
-              child: Icon(Icons.person,
-                  color: Colors.white)
+            backgroundColor: Colors.pink,
+            child: Icon(Icons.person, color: Colors.white),
           ),
           const SizedBox(width: 10),
           Expanded(
-              child: Text(
-                  name.isNotEmpty ?
-                  name : 'No name'
-              )
+            child: Text(data['name'] ?? 'No name',
+                style: const TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -382,11 +366,11 @@ void _showDetailDialog(BuildContext context, Map<String, dynamic> data) {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (email.isNotEmpty) Text("Email: $email"),
-          if (batch.isNotEmpty) Text("Batch: $batch"),
-          if (contact.isNotEmpty) Text("Contact: $contact"),
-          if (category.isNotEmpty) Text("Expertise: $category"),
-          if (data['bio'] != null && (data['bio'] as String).trim().isNotEmpty) ...[
+          if (data['email'] != null) Text("Email: ${data['email']}"),
+          if (data['batch'] != null) Text("Batch: ${data['batch']}"),
+          if (data['phone'] != null) Text("Contact: ${data['phone']}"),
+          if (data['expertise'] != null) Text("Expertise: ${data['expertise']}"),
+          if (data['bio'] != null) ...[
             const SizedBox(height: 8),
             const Text("About:", style: TextStyle(fontWeight: FontWeight.bold)),
             Text(data['bio']),
@@ -394,7 +378,10 @@ void _showDetailDialog(BuildContext context, Map<String, dynamic> data) {
         ],
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close', style: TextStyle(color: Colors.pink))),
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text("Close", style: TextStyle(color: Colors.pink)),
+        ),
       ],
     ),
   );

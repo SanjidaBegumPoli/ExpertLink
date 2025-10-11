@@ -34,7 +34,7 @@ class _NotificationPageState extends State<NotificationPage> {
         );
         break;
       case 2:
-      // Already on Notifications
+      // Alrady on Notifications
         break;
       case 3:
         Navigator.pushReplacement(

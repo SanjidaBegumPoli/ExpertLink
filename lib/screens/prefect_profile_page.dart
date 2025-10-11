@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
+import 'package:firebase_auth/firebase_auth.dart';
+import 'login_page.dart'; // Make sure this import path is correct
 
 class PrefectProfilePage extends StatefulWidget {
   final String userId;
@@ -27,7 +29,6 @@ class _PrefectProfilePageState extends State<PrefectProfilePage> {
   final TextEditingController _batchController = TextEditingController();
   final TextEditingController _departmentController = TextEditingController();
 
-
   final String cloudName = "dxhfsxl6l";
   final String uploadPreset = "uploads";
 
@@ -41,12 +42,14 @@ class _PrefectProfilePageState extends State<PrefectProfilePage> {
       debugPrint("Image picker error: $e");
     }
   }
-//image upload part
+
+  // 🔹 Upload image to Cloudinary
   Future<String?> _uploadToCloudinary(File imageFile) async {
     try {
       setState(() => _isUploading = true);
 
-      final uri = Uri.parse("https://api.cloudinary.com/v1_1/$cloudName/image/upload");
+      final uri =
+      Uri.parse("https://api.cloudinary.com/v1_1/$cloudName/image/upload");
       final request = http.MultipartRequest('POST', uri)
         ..fields['upload_preset'] = uploadPreset
         ..files.add(await http.MultipartFile.fromPath('file', imageFile.path));
@@ -68,7 +71,7 @@ class _PrefectProfilePageState extends State<PrefectProfilePage> {
     }
   }
 
-  /// Update Firestore profile
+  // 🔹 Update Firestore Profile
   Future<void> _updateProfile(String userId) async {
     try {
       final docRef = FirebaseFirestore.instance.collection('users').doc(userId);
@@ -100,7 +103,7 @@ class _PrefectProfilePageState extends State<PrefectProfilePage> {
     }
   }
 
-  ///Delete Firestore profile
+  // 🔹 Delete Profile
   Future<void> _deleteProfile(String userId) async {
     await FirebaseFirestore.instance.collection('users').doc(userId).delete();
     ScaffoldMessenger.of(context).showSnackBar(
@@ -109,9 +112,22 @@ class _PrefectProfilePageState extends State<PrefectProfilePage> {
     Navigator.pop(context);
   }
 
+  // 🔹 Logout Function
+  Future<void> _logout() async {
+    await FirebaseAuth.instance.signOut();
+    if (mounted) {
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginPage()),
+            (route) => false,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final docRef = FirebaseFirestore.instance.collection('users').doc(widget.userId);
+    final docRef =
+    FirebaseFirestore.instance.collection('users').doc(widget.userId);
 
     return Scaffold(
       appBar: AppBar(
@@ -132,17 +148,22 @@ class _PrefectProfilePageState extends State<PrefectProfilePage> {
             icon: const Icon(Icons.delete),
             onPressed: () => _deleteProfile(widget.userId),
           ),
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: _logout,
+          ),
         ],
       ),
       body: StreamBuilder<DocumentSnapshot>(
         stream: docRef.snapshots(),
         builder: (context, snapshot) {
-          if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
+          if (!snapshot.hasData) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
           final data = snapshot.data!.data() as Map<String, dynamic>? ?? {};
           final profileImage = data['profileImage'] ?? '';
 
-          // Update controllers
           _nameController.text = data['name'] ?? '';
           _emailController.text = data['email'] ?? '';
           _phoneController.text = data['phone'] ?? '';
@@ -166,7 +187,8 @@ class _PrefectProfilePageState extends State<PrefectProfilePage> {
                             ? NetworkImage(profileImage)
                             : null) as ImageProvider?,
                         child: (profileImage.isEmpty && _imageFile == null)
-                            ? const Icon(Icons.person, size: 55, color: Colors.white)
+                            ? const Icon(Icons.person,
+                            size: 55, color: Colors.white)
                             : null,
                       ),
                       if (_isEditing)
@@ -178,7 +200,8 @@ class _PrefectProfilePageState extends State<PrefectProfilePage> {
                             child: CircleAvatar(
                               radius: 16,
                               backgroundColor: Colors.pink,
-                              child: const Icon(Icons.camera_alt, size: 18, color: Colors.white),
+                              child: const Icon(Icons.camera_alt,
+                                  size: 18, color: Colors.white),
                             ),
                           ),
                         ),
@@ -193,10 +216,11 @@ class _PrefectProfilePageState extends State<PrefectProfilePage> {
                       child: CircularProgressIndicator(color: Colors.pink),
                     ),
 
-                  // 🔹 Profile Info
+                  // 🔹 Profile Info Card
                   Card(
                     elevation: 4,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20)),
                     margin: const EdgeInsets.symmetric(horizontal: 10),
                     child: Padding(
                       padding: const EdgeInsets.all(20),
@@ -216,8 +240,10 @@ class _PrefectProfilePageState extends State<PrefectProfilePage> {
                               ? _editableField("Batch", _batchController)
                               : _displayField("Batch", data['batch']),
                           _isEditing
-                              ? _editableField("Department", _departmentController)
-                              : _displayField("Department", data['department']),
+                              ? _editableField(
+                              "Department", _departmentController)
+                              : _displayField(
+                              "Department", data['department']),
                         ],
                       ),
                     ),
@@ -231,7 +257,7 @@ class _PrefectProfilePageState extends State<PrefectProfilePage> {
     );
   }
 
-  // 🔹 Text display mode
+  // 🔹 Display Text Field
   Widget _displayField(String title, String? value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
@@ -242,7 +268,7 @@ class _PrefectProfilePageState extends State<PrefectProfilePage> {
     );
   }
 
-  // 🔹 Editable text field
+  // 🔹 Editable Field
   Widget _editableField(String label, TextEditingController controller) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),

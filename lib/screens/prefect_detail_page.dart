@@ -3,7 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'blog_model.dart';
 
-class PrefectDetailPage extends StatelessWidget {
+class PrefectDetailPage extends StatefulWidget {
   final String prefectId;
   final String prefectName;
 
@@ -13,33 +13,68 @@ class PrefectDetailPage extends StatelessWidget {
     required this.prefectName,
   });
 
+  @override
+  State<PrefectDetailPage> createState() => _PrefectDetailPageState();
+}
+
+class _PrefectDetailPageState extends State<PrefectDetailPage> {
   Future<void> _launchUrl(String url) async {
     final uri = Uri.parse(url);
-    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-      throw Exception('Could not launch $url');
-    }
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
+  }
+
+  void _editBlog(BuildContext context, String blogId, String title, String content) {
+    final titleController = TextEditingController(text: title);
+    final contentController = TextEditingController(text: content);
+
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Edit Blog'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(controller: titleController, decoration: const InputDecoration(labelText: 'Title')),
+            TextField(controller: contentController, decoration: const InputDecoration(labelText: 'Content')),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          ElevatedButton(
+            onPressed: () async {
+              await FirebaseFirestore.instance.collection('blogs').doc(blogId).update({
+                'title': titleController.text,
+                'content': contentController.text,
+              });
+              Navigator.pop(context);
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _deleteBlog(String blogId) async {
+    await FirebaseFirestore.instance.collection('blogs').doc(blogId).delete();
   }
 
   @override
   Widget build(BuildContext context) {
-    final prefectRef = FirebaseFirestore.instance.collection('users').doc(prefectId);
-
+    final prefectRef = FirebaseFirestore.instance.collection('users').doc(widget.prefectId);
     final blogStream = FirebaseFirestore.instance
         .collection('blogs')
-        .where('prefectid', isEqualTo: prefectId) // ✅ match Firestore field
-    //.orderBy('createdAt', descending: true)
-        .snapshots(includeMetadataChanges: true);
+        .where('prefectid', isEqualTo: widget.prefectId)
+        .snapshots();
 
     return Scaffold(
-      appBar: AppBar(title: Text(prefectName), backgroundColor: Colors.pink),
+      appBar: AppBar(title: Text(widget.prefectName), backgroundColor: Colors.pink),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: StreamBuilder<DocumentSnapshot>(
           stream: prefectRef.snapshots(),
           builder: (context, snapshot) {
-            if (snapshot.hasError) return Center(child: Text('Error: ${snapshot.error}'));
             if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
-
             final data = snapshot.data!.data() as Map<String, dynamic>;
 
             return Column(
@@ -49,19 +84,14 @@ class PrefectDetailPage extends StatelessWidget {
                   child: CircleAvatar(
                     radius: 50,
                     backgroundColor: Colors.pink.shade100,
-                    backgroundImage: data['profileImage'] != null
-                        ? NetworkImage(data['profileImage'])
-                        : null,
+                    backgroundImage: data['profileImage'] != null ? NetworkImage(data['profileImage']) : null,
                     child: data['profileImage'] == null
                         ? const Icon(Icons.person, size: 50, color: Colors.pink)
                         : null,
                   ),
                 ),
                 const SizedBox(height: 16),
-                Center(
-                  child: Text(data['name'] ?? 'Unknown Prefect',
-                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                ),
+                Center(child: Text(data['name'] ?? 'Unknown Prefect', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold))),
                 const SizedBox(height: 8),
                 Text("Department: ${data['department'] ?? 'N/A'}"),
                 Text("Batch: ${data['batch'] ?? 'N/A'}"),
@@ -75,19 +105,9 @@ class PrefectDetailPage extends StatelessWidget {
                 StreamBuilder<QuerySnapshot>(
                   stream: blogStream,
                   builder: (context, blogSnap) {
-                    if (blogSnap.hasError) {
-                      return Text("Error loading blogs: ${blogSnap.error}");
-                    }
-
-                    if (blogSnap.connectionState == ConnectionState.waiting) {
-                      return const Center(child: CircularProgressIndicator());
-                    }
-
-                    final docs = blogSnap.data?.docs ?? [];
-
-                    if (docs.isEmpty) {
-                      return const Text("No blogs uploaded yet.");
-                    }
+                    if (!blogSnap.hasData) return const Center(child: CircularProgressIndicator());
+                    final docs = blogSnap.data!.docs;
+                    if (docs.isEmpty) return const Text("No blogs uploaded yet.");
 
                     final blogs = docs.map((doc) {
                       final data = doc.data() as Map<String, dynamic>;
@@ -96,7 +116,7 @@ class PrefectDetailPage extends StatelessWidget {
                         title: data['title'] ?? '',
                         content: data['content'] ?? '',
                         prefectId: data['prefectId'] ?? '',
-                        assetName: data['assetName'] ?? 'No Name',
+                        assetName: data['assetName'] ?? '',
                         assetUrl: data['assetUrl'] ?? '',
                         createdAt: data['createdAt'],
                       );
@@ -117,28 +137,23 @@ class PrefectDetailPage extends StatelessWidget {
                               children: [
                                 Text(blog.content),
                                 if (blog.assetUrl != null && blog.assetUrl!.isNotEmpty)
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 8.0),
-                                    child: InkWell(
-                                      onTap: () async {
-                                        try {
-                                          await _launchUrl(blog.assetUrl!);
-                                        } catch (e) {
-                                          ScaffoldMessenger.of(context).showSnackBar(
-                                            SnackBar(content: Text('Error opening link: $e')),
-                                          );
-                                        }
-                                      },
-                                      child: Text(
-                                        'View Link: ${blog.assetName ?? 'Click here'}',
-                                        style: const TextStyle(
-                                          color: Colors.blueAccent,
-                                          decoration: TextDecoration.underline,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ),
-                                    ),
+                                  InkWell(
+                                    onTap: () => _launchUrl(blog.assetUrl!),
+                                    child: Text('View Link: ${blog.assetName}', style: const TextStyle(color: Colors.blueAccent, decoration: TextDecoration.underline)),
                                   ),
+                              ],
+                            ),
+                            trailing: PopupMenuButton<String>(
+                              onSelected: (value) {
+                                if (value == 'edit') {
+                                  _editBlog(context, blog.id, blog.title, blog.content);
+                                } else if (value == 'delete') {
+                                  _deleteBlog(blog.id);
+                                }
+                              },
+                              itemBuilder: (context) => [
+                                const PopupMenuItem(value: 'edit', child: Text('Edit')),
+                                const PopupMenuItem(value: 'delete', child: Text('Delete')),
                               ],
                             ),
                           ),
