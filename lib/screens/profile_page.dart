@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 import 'student_home.dart';
 import 'notification_page.dart';
 import 'settings_page.dart';
+import 'student_chat_list_page.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -35,7 +36,7 @@ class _ProfilePageState extends State<ProfilePage> {
       case 2:
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const NotificationPage()),
+          MaterialPageRoute(builder: (context) => const StudentChatListPage(userName: '',),),
         );
         break;
       case 3:
@@ -85,7 +86,7 @@ class _ProfilePageState extends State<ProfilePage> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text("Profile image updated successfully!")),
           );
-          setState(() {}); // Refresh UI
+          setState(() {});
         }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -198,7 +199,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text("Profile updated successfully!")),
                     );
-                    setState(() {}); // refresh UI
+                    setState(() {});
                   },
                 ),
               ],
@@ -328,7 +329,7 @@ class _ProfilePageState extends State<ProfilePage> {
           items: const [
             BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
             BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
-            BottomNavigationBarItem(icon: Icon(Icons.notifications), label: "Notifications"),
+            BottomNavigationBarItem(icon: Icon(Icons.chat), label: "Chat"),
             BottomNavigationBarItem(icon: Icon(Icons.settings), label: "Settings"),
           ],
           currentIndex: _selectedIndex,

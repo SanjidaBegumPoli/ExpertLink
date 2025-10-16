@@ -9,7 +9,7 @@ Future<String> getOrCreateChat(String studentId, String prefectId) async {
       .get();
 
   if (chatQuery.docs.isNotEmpty) {
-    return chatQuery.docs.first.id; // chat exists
+    return chatQuery.docs.first.id;
   }
 
   final chatDoc = await FirebaseFirestore.instance.collection('chats').add({

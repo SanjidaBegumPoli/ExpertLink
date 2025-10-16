@@ -6,6 +6,7 @@ import 'profile_page.dart';
 import 'notification_page.dart';
 import 'login_page.dart';
 import 'package:expertlink/theme_provider.dart';
+import 'student_chat_list_page.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -38,7 +39,7 @@ class _SettingsPageState extends State<SettingsPage> {
       case 2:
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const NotificationPage()),
+          MaterialPageRoute(builder: (context) => const StudentChatListPage(userName: '',),),
         );
         break;
       case 3:
@@ -154,7 +155,7 @@ class _SettingsPageState extends State<SettingsPage> {
             BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
             BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
             BottomNavigationBarItem(
-                icon: Icon(Icons.notifications), label: "Notifications"),
+                icon: Icon(Icons.chat), label: "Chat"),
             BottomNavigationBarItem(
                 icon: Icon(Icons.settings), label: "Settings"),
           ],

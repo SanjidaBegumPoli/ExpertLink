@@ -34,8 +34,13 @@ class _ChatPageState extends State<ChatPage> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      appBar: AppBar(title: const Text("Live Chat")),
+      appBar: AppBar(
+        title: const Text("Live Chat"),
+        backgroundColor: Colors.pink,
+      ),
       body: Column(
         children: [
           Expanded(
@@ -47,7 +52,9 @@ class _ChatPageState extends State<ChatPage> {
                   .orderBy('timestamp', descending: false)
                   .snapshots(),
               builder: (context, snapshot) {
-                if (!snapshot.hasData) return  Center(child: CircularProgressIndicator());
+                if (!snapshot.hasData) {
+                  return const Center(child: CircularProgressIndicator());
+                }
 
                 final messages = snapshot.data!.docs;
 
@@ -56,16 +63,28 @@ class _ChatPageState extends State<ChatPage> {
                   itemBuilder: (context, index) {
                     final data = messages[index].data() as Map<String, dynamic>;
                     final isMe = data['senderId'] == currentUser.uid;
+
                     return Align(
-                      alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+                      alignment:
+                      isMe ? Alignment.centerRight : Alignment.centerLeft,
                       child: Container(
-                        margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                        margin: const EdgeInsets.symmetric(
+                            vertical: 4, horizontal: 8),
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
-                          color: isMe ? Colors.pink[200] : Colors.grey[300],
+                          color: isMe
+                              ? Colors.pink[200]
+                              : (isDark ? Colors.grey[800] : Colors.grey[300]),
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: Text(data['text'] ?? ''),
+                        child: Text(
+                          data['text'] ?? '',
+                          style: TextStyle(
+                            color: isDark
+                                ? Colors.white
+                                : Colors.black,
+                          ),
+                        ),
                       ),
                     );
                   },
@@ -75,14 +94,24 @@ class _ChatPageState extends State<ChatPage> {
           ),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-            color: Colors.grey[100],
+            color: isDark ? Colors.grey[900] : Colors.grey[100],
             child: Row(
               children: [
                 Expanded(
                   child: TextField(
                     controller: _controller,
-                    decoration: const InputDecoration(
+                    style: TextStyle(
+                      color: isDark
+                          ? Colors.white
+                          : Colors.black,
+                    ),
+                    decoration: InputDecoration(
                       hintText: "Type a message...",
+                      hintStyle: TextStyle(
+                        color: isDark
+                            ? Colors.white70
+                            : Colors.grey[600],
+                      ),
                       border: InputBorder.none,
                     ),
                   ),

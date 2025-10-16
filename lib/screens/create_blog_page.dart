@@ -36,10 +36,10 @@ class _CreateBlogPageState extends State<CreateBlogPage> {
       await FirebaseFirestore.instance.collection('blogs').add({
         'title': titleController.text.trim(),
         'content': contentController.text.trim(),
-        'prefectid': widget.prefectId, // ✅ match Firestore field
+        'prefectid': widget.prefectId,
         'assetUrl': linkController.text.trim(),
         'assetName': 'Direct Link',
-        'createdAt': Timestamp.now(),//createdAt:FieldValue.serverTimestamp(previous)
+        'createdAt': Timestamp.now(),
       });
 
       titleController.clear();
@@ -103,7 +103,11 @@ class _CreateBlogPageState extends State<CreateBlogPage> {
               child: _isLoading
                   ? const SizedBox(
                   width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white))
-                  : const Text("Upload Blog"),
+                  : const Text("Upload Blog",
+              style: const TextStyle(
+                color: Colors.white
+              ),
+              ),
             ),
           ],
         ),

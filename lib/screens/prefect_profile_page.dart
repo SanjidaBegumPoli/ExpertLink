@@ -5,7 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:firebase_auth/firebase_auth.dart';
-import 'login_page.dart'; // Make sure this import path is correct
+import 'login_page.dart';
 
 class PrefectProfilePage extends StatefulWidget {
   final String userId;
@@ -22,7 +22,7 @@ class _PrefectProfilePageState extends State<PrefectProfilePage> {
   bool _isEditing = false;
   bool _isUploading = false;
 
-  // Controllers
+
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
@@ -43,7 +43,7 @@ class _PrefectProfilePageState extends State<PrefectProfilePage> {
     }
   }
 
-  // 🔹 Upload image to Cloudinary
+
   Future<String?> _uploadToCloudinary(File imageFile) async {
     try {
       setState(() => _isUploading = true);
@@ -71,7 +71,7 @@ class _PrefectProfilePageState extends State<PrefectProfilePage> {
     }
   }
 
-  // 🔹 Update Firestore Profile
+
   Future<void> _updateProfile(String userId) async {
     try {
       final docRef = FirebaseFirestore.instance.collection('users').doc(userId);
@@ -103,7 +103,6 @@ class _PrefectProfilePageState extends State<PrefectProfilePage> {
     }
   }
 
-  // 🔹 Delete Profile
   Future<void> _deleteProfile(String userId) async {
     await FirebaseFirestore.instance.collection('users').doc(userId).delete();
     ScaffoldMessenger.of(context).showSnackBar(
@@ -112,7 +111,7 @@ class _PrefectProfilePageState extends State<PrefectProfilePage> {
     Navigator.pop(context);
   }
 
-  // 🔹 Logout Function
+
   Future<void> _logout() async {
     await FirebaseAuth.instance.signOut();
     if (mounted) {
@@ -129,10 +128,15 @@ class _PrefectProfilePageState extends State<PrefectProfilePage> {
     final docRef =
     FirebaseFirestore.instance.collection('users').doc(widget.userId);
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text("My Profile"),
         backgroundColor: Colors.pink,
+        iconTheme: const IconThemeData(color: Colors.white),
+        actionsIconTheme: const IconThemeData(color: Colors.white),
         actions: [
           if (!_isEditing)
             IconButton(
@@ -216,8 +220,9 @@ class _PrefectProfilePageState extends State<PrefectProfilePage> {
                       child: CircularProgressIndicator(color: Colors.pink),
                     ),
 
-                  // 🔹 Profile Info Card
+
                   Card(
+                    color: isDark ? Colors.grey[900] : Colors.white,
                     elevation: 4,
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20)),
@@ -257,27 +262,42 @@ class _PrefectProfilePageState extends State<PrefectProfilePage> {
     );
   }
 
-  // 🔹 Display Text Field
   Widget _displayField(String title, String? value) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Text(
         "$title: ${value ?? '-'}",
-        style: const TextStyle(fontSize: 16, color: Colors.black87),
+        style: TextStyle(
+          fontSize: 16,
+          color: isDark ? Colors.white70 : Colors.black87,
+        ),
       ),
     );
   }
 
-  // 🔹 Editable Field
+
   Widget _editableField(String label, TextEditingController controller) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: TextField(
         controller: controller,
+        cursorColor: Colors.pink,
+        style: TextStyle(color: isDark ? Colors.white : Colors.black),
         decoration: InputDecoration(
           labelText: label,
+          labelStyle: TextStyle(
+            color: isDark ? Colors.pink.shade100 : Colors.pink,
+          ),
           focusedBorder: const UnderlineInputBorder(
             borderSide: BorderSide(color: Colors.pink, width: 2),
+          ),
+          enabledBorder: UnderlineInputBorder(
+            borderSide: BorderSide(
+                color: isDark ? Colors.white54 : Colors.black54),
           ),
         ),
       ),

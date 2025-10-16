@@ -37,7 +37,7 @@ class _PrefectHomePageState extends State<PrefectHomePage> {
       {"name": "App Development", "image": "lib/assets/app_development.png"},
       {"name": "Cyber Security", "image": "lib/assets/cyberSecurity.png"},
       {"name": "Data Science", "image": "lib/assets/CP.png"},
-      {"name": "Networking", "image": "lib/assets/UiUx.png"},
+
     ];
 
     return Scaffold(

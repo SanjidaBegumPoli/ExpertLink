@@ -21,7 +21,7 @@ class _LoginPageState extends State<LoginPage> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   bool isLoading = false;
-  bool _obscurePassword = true; // 👁️ Toggle variable
+  bool _obscurePassword = true;
 
   final Color primary = const Color(0xFF343341);
   final Color alternate = const Color(0xFFE0E3E7);
@@ -113,7 +113,6 @@ class _LoginPageState extends State<LoginPage> {
             children: [
               SizedBox(height: 30),
 
-              // Logo
               Center(
                 child: Container(
                   height: 90,
@@ -139,7 +138,6 @@ class _LoginPageState extends State<LoginPage> {
 
               SizedBox(height: 20),
 
-              // Title
               Text(
                 "Login",
                 style: TextStyle(
@@ -228,7 +226,10 @@ class _LoginPageState extends State<LoginPage> {
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
                           borderSide:
-                          BorderSide(color: Colors.pink.shade500, width: 2),
+                          BorderSide(
+                              color: Colors.pink.shade500,
+                              width: 2
+                          ),
                         ),
                       ),
                     ),

@@ -15,7 +15,7 @@ class Message {
     return {
       'senderId': senderId,
       'text': text,
-      'timestamp': FieldValue.serverTimestamp(), // ✅ server time
+      'timestamp': FieldValue.serverTimestamp(),
     };
   }
 

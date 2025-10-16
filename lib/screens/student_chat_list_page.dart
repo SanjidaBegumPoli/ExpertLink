@@ -17,17 +17,17 @@ class StudentChatListPage extends StatefulWidget {
 }
 
 class _StudentChatListPageState extends State<StudentChatListPage> {
-  int _selectedIndex = 2; // Chat tab
+  int _selectedIndex = 2;
   final List<Widget> _pages = [];
 
   @override
   void initState() {
     super.initState();
     _pages.addAll([
-      StudentHomePage(userName: widget.userName), // Home
-      const ProfilePage(),                         // Profile
-      _buildChatPage(),                            // Chat
-      const SettingsPage(),                        // Settings
+      StudentHomePage(userName: widget.userName),
+      const ProfilePage(),
+      _buildChatPage(),
+      const SettingsPage(),
     ]);
   }
 
@@ -44,12 +44,12 @@ class _StudentChatListPageState extends State<StudentChatListPage> {
       appBar: AppBar(
         title: const Text("Chat with Prefects"),
         backgroundColor: Colors.pink,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pop(context); // Back button functionality
-          },
-        ),
+        // leading: IconButton(
+        //   icon: const Icon(Icons.arrow_back),
+        //   onPressed: () {
+        //     Navigator.pop(context);
+        //   },
+        // ),
       ),
       body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
         stream: FirebaseFirestore.instance

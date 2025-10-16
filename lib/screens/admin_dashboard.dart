@@ -258,7 +258,7 @@ class StudentProfilesPage extends StatelessWidget {
                 children: [
                   Text("Email: ${_safeGet(data, 'email')}"),
                   Text("Batch: ${_safeGet(data, 'batch')}"),
-                  Text("Expertise: ${_safeGet(data, 'expertise')}"),
+                  //Text("Expertise: ${_safeGet(data, 'expertise')}"),
                 ],
               ),
               trailing: IconButton(

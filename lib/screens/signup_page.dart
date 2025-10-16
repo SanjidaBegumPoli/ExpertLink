@@ -28,7 +28,6 @@ class _SignupPageState extends State<SignupPage> {
 
   String selectedRole = 'student';
   bool isLoading = false;
-
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
 
@@ -47,19 +46,16 @@ class _SignupPageState extends State<SignupPage> {
         borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide(color: Colors.pink.shade500, width: 2),
       ),
-      hintStyle: TextStyle(color: Colors.black),
+      hintStyle: const TextStyle(color: Colors.black),
     );
   }
 
   bool _validateEmail(String email) =>
       RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
-
   bool _validatePhone(String phone) =>
       RegExp(r'^(01[3-9]\d{8})$').hasMatch(phone);
-
   bool _validateStudentId(String id) =>
       RegExp(r'^(0182\d{12})$').hasMatch(id);
-
   bool _validatePassword(String password) =>
       RegExp(r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#\$&*~])[A-Za-z\d!@#\$&*~]{6,20}$')
           .hasMatch(password);
@@ -71,7 +67,6 @@ class _SignupPageState extends State<SignupPage> {
     String confirmPassword = _confirmPasswordController.text.trim();
     String phone = _phoneController.text.trim();
     String studentId = _studentIdController.text.trim();
-
 
     if (name.isEmpty ||
         email.isEmpty ||
@@ -89,20 +84,18 @@ class _SignupPageState extends State<SignupPage> {
       return;
     }
     if (!_validatePhone(phone)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('Enter a valid phone number (01XXXXXXXXXX)')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Enter a valid phone number')));
       return;
     }
     if (!_validateStudentId(studentId)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Invalid Student ID (must start with 01822 + 9 digits)')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Invalid Student ID')));
       return;
     }
     if (!_validatePassword(password)) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text(
-              'Password must be 6–20 chars, include letters, numbers & one special character')));
+          content: Text('Password must be 6–20 chars, include letters, numbers & one special character')));
       return;
     }
     if (password != confirmPassword) {
@@ -138,14 +131,12 @@ class _SignupPageState extends State<SignupPage> {
           .showSnackBar(const SnackBar(content: Text('Signup successful!')));
 
       if (selectedRole == 'prefect') {
-        Navigator.pushReplacement(
-            context, MaterialPageRoute(builder: (_) => const PendingApprovalPage()));
+        Navigator.pushReplacement(context,
+            MaterialPageRoute(builder: (_) => const PendingApprovalPage()));
       } else {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(
-            builder: (_) => StudentHomePage(userName: name),
-          ),
+          MaterialPageRoute(builder: (_) => StudentHomePage(userName: name)),
         );
       }
     } on FirebaseAuthException catch (e) {
@@ -178,18 +169,17 @@ class _SignupPageState extends State<SignupPage> {
                     child: Text(
                       "ExpertLink",
                       style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'Ubuntu',
-                        color: Colors.pink,
-                      ),
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Ubuntu',
+                          color: Colors.pink),
                       textAlign: TextAlign.center,
                     ),
                   ),
                 ),
               ),
-              SizedBox(height: 20),
-              Text(
+              const SizedBox(height: 20),
+              const Text(
                 "Sign Up",
                 style: TextStyle(
                     fontSize: 30,
@@ -197,19 +187,19 @@ class _SignupPageState extends State<SignupPage> {
                     fontFamily: 'Ubuntu',
                     color: Colors.pinkAccent),
               ),
-              SizedBox(height: 5),
-              Text(
+              const SizedBox(height: 5),
+              const Text(
                 "Create your ExpertLink account",
                 style: TextStyle(
                     fontSize: 16,
                     color: Colors.pinkAccent,
                     fontWeight: FontWeight.bold),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
 
               // Role dropdown
               Container(
-                padding:  EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(12),
@@ -217,24 +207,24 @@ class _SignupPageState extends State<SignupPage> {
                 ),
                 child: DropdownButtonFormField<String>(
                   value: selectedRole,
-                  items: [
+                  items: const [
                     DropdownMenuItem(value: 'student', child: Text('Student')),
                     DropdownMenuItem(value: 'prefect', child: Text('Prefect')),
                   ],
                   onChanged: (value) => setState(() => selectedRole = value!),
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     labelText: 'Select Role',
                     border: InputBorder.none,
                   ),
                 ),
               ),
-              SizedBox(height: 15),
+              const SizedBox(height: 15),
 
               _buildRoundedTextField(_nameController, "Full Name", Icons.person),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               _buildRoundedTextField(_emailController, "Email", Icons.email,
                   keyboardType: TextInputType.emailAddress),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
 
               TextField(
                 controller: _passwordController,
@@ -245,19 +235,16 @@ class _SignupPageState extends State<SignupPage> {
                       _obscurePassword ? Icons.visibility_off : Icons.visibility,
                       color: Colors.pink,
                     ),
-                    onPressed: () =>
-                        setState(() => _obscurePassword = !_obscurePassword),
+                    onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                   ),
                 ),
               ),
-              SizedBox(height: 10),
-
+              const SizedBox(height: 10),
 
               TextField(
                 controller: _confirmPasswordController,
                 obscureText: _obscureConfirmPassword,
-                decoration:
-                _inputDecoration("Confirm Password", Icons.lock).copyWith(
+                decoration: _inputDecoration("Confirm Password", Icons.lock).copyWith(
                   suffixIcon: IconButton(
                     icon: Icon(
                       _obscureConfirmPassword
@@ -265,33 +252,71 @@ class _SignupPageState extends State<SignupPage> {
                           : Icons.visibility,
                       color: Colors.pink,
                     ),
-                    onPressed: () => setState(() =>
-                    _obscureConfirmPassword = !_obscureConfirmPassword),
+                    onPressed: () => setState(
+                            () => _obscureConfirmPassword = !_obscureConfirmPassword),
                   ),
                 ),
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
 
               _buildRoundedTextField(
                   _phoneController, "Phone Number", Icons.phone,
                   keyboardType: TextInputType.phone),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               _buildRoundedTextField(
                   _studentIdController, "Student ID", Icons.badge),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               _buildRoundedTextField(
                   _batchController, "Batch", Icons.date_range),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               _buildRoundedTextField(
                   _deptController, "Department", Icons.account_balance),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
+
+              // Expertise dropdown for prefects
               if (selectedRole == 'prefect')
-                _buildRoundedTextField(
-                    _expertiseController, "Expertise Field", Icons.star),
+                Container(
+                  margin: const EdgeInsets.only(top: 10),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.pink.shade500),
+                  ),
+                  child: DropdownButtonFormField<String>(
+                    value: _expertiseController.text.isNotEmpty
+                        ? _expertiseController.text
+                        : null,
+                    items: [
+                      'Competitive Programming',
+                      'UI/UX Design',
+                      'AI/ML',
+                      'Web Development',
+                      'App Development',
+                      'Cyber Security',
+                      'Data Science',
+                    ]
+                        .map((e) => DropdownMenuItem<String>(
+                      value: e,
+                      child: Text(e),
+                    ))
+                        .toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        _expertiseController.text = value!;
+                      });
+                    },
+                    decoration: const InputDecoration(
+                      labelText: "Expertise Field",
+                      prefixIcon: Icon(Icons.star, color: Colors.pink),
+                      border: InputBorder.none,
+                    ),
+                  ),
+                ),
 
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
 
-              // Sign up button
+              // Sign Up button
               SizedBox(
                 width: double.infinity,
                 height: 50,
@@ -303,27 +328,26 @@ class _SignupPageState extends State<SignupPage> {
                         borderRadius: BorderRadius.circular(25)),
                   ),
                   child: isLoading
-                      ? CircularProgressIndicator(color: Colors.white)
-                      : Text("Sign Up",
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : const Text("Sign Up",
                       style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                           color: Colors.white)),
                 ),
               ),
-
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
 
               TextButton(
                 onPressed: () => Navigator.pushReplacement(
-                    context, MaterialPageRoute(builder: (_) => LoginPage())),
-                child: Text(
+                    context, MaterialPageRoute(builder: (_) => const LoginPage())),
+                child: const Text(
                   "Already have an account? Login",
                   style: TextStyle(
                       color: Colors.pinkAccent, fontWeight: FontWeight.bold),
                 ),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
             ],
           ),
         ),
@@ -339,7 +363,7 @@ class _SignupPageState extends State<SignupPage> {
       controller: controller,
       obscureText: obscureText,
       keyboardType: keyboardType,
-      style: TextStyle(color: Colors.black),
+      style: const TextStyle(color: Colors.black),
       decoration: _inputDecoration(label, icon),
     );
   }
