@@ -46,7 +46,6 @@ class _SignupPageState extends State<SignupPage> {
         borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide(color: Colors.pink.shade500, width: 2),
       ),
-      hintStyle: const TextStyle(color: Colors.black),
     );
   }
 
@@ -74,40 +73,38 @@ class _SignupPageState extends State<SignupPage> {
         confirmPassword.isEmpty ||
         phone.isEmpty ||
         studentId.isEmpty) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Please fill all required fields')));
+      _showSnack('Please fill all required fields');
       return;
     }
     if (!_validateEmail(email)) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Enter a valid email')));
+      _showSnack('Enter a valid email');
       return;
     }
     if (!_validatePhone(phone)) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Enter a valid phone number')));
+      _showSnack('Enter a valid phone number');
       return;
     }
     if (!_validateStudentId(studentId)) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Invalid Student ID')));
+      _showSnack('Invalid Student ID');
       return;
     }
     if (!_validatePassword(password)) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Password must be 6–20 chars, include letters, numbers & one special character')));
+      _showSnack('Password must be 6–20 chars, include letters, numbers & one special character');
       return;
     }
     if (password != confirmPassword) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Passwords do not match')));
+      _showSnack('Passwords do not match');
       return;
     }
 
     setState(() => isLoading = true);
+
     try {
-      UserCredential userCredential =
-      await _auth.createUserWithEmailAndPassword(email: email, password: password);
+      UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
+          email: email, password: password);
+
+      // Email Verification
+      await userCredential.user!.sendEmailVerification();
 
       final user = {
         'uid': userCredential.user!.uid,
@@ -127,24 +124,64 @@ class _SignupPageState extends State<SignupPage> {
 
       await _firestore.collection('users').doc(userCredential.user!.uid).set(user);
 
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Signup successful!')));
+      _showSnack('Verification email sent! Please check your inbox.');
 
-      if (selectedRole == 'prefect') {
-        Navigator.pushReplacement(context,
-            MaterialPageRoute(builder: (_) => const PendingApprovalPage()));
-      } else {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => StudentHomePage(userName: name)),
-        );
-      }
+      // wait email verification before proceeding
+      _showEmailVerificationDialog();
     } on FirebaseAuthException catch (e) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Error: ${e.message}')));
+      _showSnack('Error: ${e.message}');
     } finally {
       setState(() => isLoading = false);
     }
+  }
+
+  void _showSnack(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  void _showEmailVerificationDialog() {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text("Verify Your Email"),
+        content: const Text(
+          "A verification link has been sent to your email. "
+              "Please verify before logging in.",
+        ),
+        actions: [
+          TextButton(
+            onPressed: () async {
+              await FirebaseAuth.instance.currentUser!.reload();
+              User? user = FirebaseAuth.instance.currentUser;
+
+              if (user != null && user.emailVerified) {
+                Navigator.pop(context); // close dialog
+                if (selectedRole == 'prefect') {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (_) => const PendingApprovalPage()),
+                  );
+                } else {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (_) =>
+                        StudentHomePage(userName: _nameController.text.trim())),
+                  );
+                }
+              } else {
+                _showSnack('Email not verified yet. Please check your inbox.');
+              }
+            },
+            child: const Text("I've Verified"),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pushReplacement(
+                context, MaterialPageRoute(builder: (_) => const LoginPage())),
+            child: const Text("Go to Login"),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -197,145 +234,34 @@ class _SignupPageState extends State<SignupPage> {
               ),
               const SizedBox(height: 20),
 
-              // Role dropdown
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.pink.shade500),
-                ),
-                child: DropdownButtonFormField<String>(
-                  value: selectedRole,
-                  items: const [
-                    DropdownMenuItem(value: 'student', child: Text('Student')),
-                    DropdownMenuItem(value: 'prefect', child: Text('Prefect')),
-                  ],
-                  onChanged: (value) => setState(() => selectedRole = value!),
-                  decoration: const InputDecoration(
-                    labelText: 'Select Role',
-                    border: InputBorder.none,
-                  ),
-                ),
-              ),
+              _buildRoleDropdown(),
               const SizedBox(height: 15),
-
               _buildRoundedTextField(_nameController, "Full Name", Icons.person),
               const SizedBox(height: 10),
               _buildRoundedTextField(_emailController, "Email", Icons.email,
                   keyboardType: TextInputType.emailAddress),
               const SizedBox(height: 10),
 
-              TextField(
-                controller: _passwordController,
-                obscureText: _obscurePassword,
-                decoration: _inputDecoration("Password", Icons.lock).copyWith(
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _obscurePassword ? Icons.visibility_off : Icons.visibility,
-                      color: Colors.pink,
-                    ),
-                    onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
-                  ),
-                ),
-              ),
+              _buildPasswordField(),
               const SizedBox(height: 10),
-
-              TextField(
-                controller: _confirmPasswordController,
-                obscureText: _obscureConfirmPassword,
-                decoration: _inputDecoration("Confirm Password", Icons.lock).copyWith(
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _obscureConfirmPassword
-                          ? Icons.visibility_off
-                          : Icons.visibility,
-                      color: Colors.pink,
-                    ),
-                    onPressed: () => setState(
-                            () => _obscureConfirmPassword = !_obscureConfirmPassword),
-                  ),
-                ),
-              ),
+              _buildConfirmPasswordField(),
               const SizedBox(height: 10),
 
               _buildRoundedTextField(
                   _phoneController, "Phone Number", Icons.phone,
                   keyboardType: TextInputType.phone),
               const SizedBox(height: 10),
-              _buildRoundedTextField(
-                  _studentIdController, "Student ID", Icons.badge),
+              _buildRoundedTextField(_studentIdController, "Student ID", Icons.badge),
               const SizedBox(height: 10),
-              _buildRoundedTextField(
-                  _batchController, "Batch", Icons.date_range),
+              _buildRoundedTextField(_batchController, "Batch", Icons.date_range),
               const SizedBox(height: 10),
-              _buildRoundedTextField(
-                  _deptController, "Department", Icons.account_balance),
+              _buildRoundedTextField(_deptController, "Department", Icons.account_balance),
               const SizedBox(height: 10),
 
-              // Expertise dropdown for prefects
-              if (selectedRole == 'prefect')
-                Container(
-                  margin: const EdgeInsets.only(top: 10),
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.pink.shade500),
-                  ),
-                  child: DropdownButtonFormField<String>(
-                    value: _expertiseController.text.isNotEmpty
-                        ? _expertiseController.text
-                        : null,
-                    items: [
-                      'Competitive Programming',
-                      'UI/UX Design',
-                      'AI/ML',
-                      'Web Development',
-                      'App Development',
-                      'Cyber Security',
-                      'Data Science',
-                    ]
-                        .map((e) => DropdownMenuItem<String>(
-                      value: e,
-                      child: Text(e),
-                    ))
-                        .toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        _expertiseController.text = value!;
-                      });
-                    },
-                    decoration: const InputDecoration(
-                      labelText: "Expertise Field",
-                      prefixIcon: Icon(Icons.star, color: Colors.pink),
-                      border: InputBorder.none,
-                    ),
-                  ),
-                ),
+              if (selectedRole == 'prefect') _buildExpertiseDropdown(),
 
               const SizedBox(height: 20),
-
-              // Sign Up button
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: isLoading ? null : _signUp,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.pink,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(25)),
-                  ),
-                  child: isLoading
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text("Sign Up",
-                      style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white)),
-                ),
-              ),
+              _buildSignupButton(),
               const SizedBox(height: 10),
 
               TextButton(
@@ -354,6 +280,111 @@ class _SignupPageState extends State<SignupPage> {
       ),
     );
   }
+
+
+  Widget _buildSignupButton() => SizedBox(
+    width: double.infinity,
+    height: 50,
+    child: ElevatedButton(
+      onPressed: isLoading ? null : _signUp,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.pink,
+        shape:
+        RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+      ),
+      child: isLoading
+          ? const CircularProgressIndicator(color: Colors.white)
+          : const Text("Sign Up",
+          style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.white)),
+    ),
+  );
+
+  Widget _buildPasswordField() => TextField(
+    controller: _passwordController,
+    obscureText: _obscurePassword,
+    decoration: _inputDecoration("Password", Icons.lock).copyWith(
+      suffixIcon: IconButton(
+        icon: Icon(
+          _obscurePassword ? Icons.visibility_off : Icons.visibility,
+          color: Colors.pink,
+        ),
+        onPressed: () =>
+            setState(() => _obscurePassword = !_obscurePassword),
+      ),
+    ),
+  );
+
+  Widget _buildConfirmPasswordField() => TextField(
+    controller: _confirmPasswordController,
+    obscureText: _obscureConfirmPassword,
+    decoration: _inputDecoration("Confirm Password", Icons.lock).copyWith(
+      suffixIcon: IconButton(
+        icon: Icon(
+          _obscureConfirmPassword ? Icons.visibility_off : Icons.visibility,
+          color: Colors.pink,
+        ),
+        onPressed: () => setState(
+                () => _obscureConfirmPassword = !_obscureConfirmPassword),
+      ),
+    ),
+  );
+
+  Widget _buildRoleDropdown() => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 16),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(color: Colors.pink.shade500),
+    ),
+    child: DropdownButtonFormField<String>(
+      value: selectedRole,
+      items: const [
+        DropdownMenuItem(value: 'student', child: Text('Student')),
+        DropdownMenuItem(value: 'prefect', child: Text('Prefect')),
+      ],
+      onChanged: (value) => setState(() => selectedRole = value!),
+      decoration: const InputDecoration(
+        labelText: 'Select Role',
+        border: InputBorder.none,
+      ),
+    ),
+  );
+
+  Widget _buildExpertiseDropdown() => Container(
+    margin: const EdgeInsets.only(top: 10),
+    padding: const EdgeInsets.symmetric(horizontal: 16),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(color: Colors.pink.shade500),
+    ),
+    child: DropdownButtonFormField<String>(
+      value:
+      _expertiseController.text.isNotEmpty ? _expertiseController.text : null,
+      items: [
+        'Competitive Programming',
+        'UI/UX Design',
+        'AI/ML',
+        'Web Development',
+        'App Development',
+        'Cyber Security',
+        'Data Science',
+      ].map((e) => DropdownMenuItem<String>(
+        value: e,
+        child: Text(e),
+      )).toList(),
+      onChanged: (value) =>
+          setState(() => _expertiseController.text = value!),
+      decoration: const InputDecoration(
+        labelText: "Expertise Field",
+        prefixIcon: Icon(Icons.star, color: Colors.pink),
+        border: InputBorder.none,
+      ),
+    ),
+  );
 
   Widget _buildRoundedTextField(TextEditingController controller, String label,
       IconData icon,
